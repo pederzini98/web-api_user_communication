@@ -1,13 +1,19 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using UseModels.Database;
+using UseModels.Services;
+using UserWebAPI.Authentication;
 
 namespace UserWebAPI
 {
@@ -23,7 +29,32 @@ namespace UserWebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.AddSingleton<IDbClient, DbClient>();
+            services.Configure<DbConfig>(Configuration);
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<ICommunicationService, CommunicationService>();
+
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                try
+                {
+                    c.OperationFilter<AddRequiredHeaderToSwagger>();
+                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "UsersComunication.WebApi", Version = "v1" });
+                    // c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+                    c.OperationFilter<AddRequiredHeaderToSwagger>();
+                    var filePath = Path.Combine(System.AppContext.BaseDirectory, "xmlfile.txt");
+                    c.IncludeXmlComments(filePath);
+                }
+                catch (System.Exception)
+                {
+
+                    throw;
+                }
+
+            });
+            services.AddAuthentication("BasicAuthentication").AddScheme<AuthenticationSchemeOptions, BasicAuthentication>("BasicAuthentication", null);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,24 +63,20 @@ namespace UserWebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UsersComunication.WebApi v1"));
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }

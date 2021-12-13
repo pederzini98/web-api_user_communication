@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UserWebAPI</name>
+    </assembly>
+    <members>
+        <member name="M:UserWebAPI.Controllers.CommunicationController.CreateCommunication(UseModels.ViewModels.CreateCommunicationViewModel)">
+             <summary>
+             Email = 1,
+            Residencial Phone = 2,
+            Call Cellphone = 3,
+             Whatsapp = 4,
+             Telegram = 5,
+            Other CellPhone Number = 6,
+            Facebook Page = 7,
+             Linkedin Page = 8,
+            Instagram Page = 9,
+            Youtubr Channel = 10,
+            Other Page Source = 11,
+             </summary>
+        </member>
+        <member name="M:UserWebAPI.Controllers.UserController.Post(UseModels.ViewModels.CreateUserViewModel)">
+             <summary>
+             Email = 1,
+            Residencial Phone = 2,
+            Call Cellphone = 3,
+             Whatsapp = 4,
+             Telegram = 5,
+            Other CellPhone Number = 6,
+            Facebook Page = 7,
+             Linkedin Page = 8,
+            Instagram Page = 9,
+            Youtubr Channel = 10,
+            Other Page Source = 11,
+             </summary>
+        </member>
+    </members>
+</doc>
