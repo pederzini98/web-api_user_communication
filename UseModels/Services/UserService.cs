@@ -1,8 +1,6 @@
 ﻿using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UseModels.Database;
 using UseModels.Entities;
@@ -67,7 +65,7 @@ namespace UseModels.Services
 
         public async Task<List<User>> GetUsers()
         {
-            return await _users.Find(user =>  !String.IsNullOrEmpty(user.Name)).ToListAsync();
+            return await _users.Find(user => !String.IsNullOrEmpty(user.Name)).ToListAsync();
         }
 
         public async Task<bool> CreateUser(User user)
@@ -83,6 +81,14 @@ namespace UseModels.Services
 
                 return false;
             }
+        }
+        public async Task<bool> EditUser(string userId, User user)
+        {
+            //  await _users.ReplaceOneAsync(x => x.Id == userId, user); --> Serialize Problem
+            await _users.DeleteOneAsync(x => x.Id == userId);
+            await CreateUser(user);
+
+            return true;
         }
     }
 }

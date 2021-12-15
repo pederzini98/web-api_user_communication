@@ -1,8 +1,6 @@
 ﻿using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UseModels.Database;
 using UseModels.Entities;
@@ -59,7 +57,7 @@ namespace UseModels.Services
 
         public async Task<List<Communication>> GetCommunicationWithTitle(string title)
         {
-            return await _communication.FindAsync(communication => communication.CommunicationTitle == title).GetAwaiter().GetResult().ToListAsync();
+            return await _communication.FindAsync(communication => !String.IsNullOrEmpty(communication.CommunicationTitle) && communication.CommunicationTitle.ToLower().Contains(title.ToLower())).GetAwaiter().GetResult().ToListAsync();
         }
 
 

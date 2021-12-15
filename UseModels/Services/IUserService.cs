@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UseModels.Entities;
 using UseModels.Enums;
@@ -25,6 +22,6 @@ namespace UseModels.Services
         Task<User> GetUserById(string id);
 
         Task<bool> CreateUser(User user);
-
+        Task<bool> EditUser(string userId, User user);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace UserWebAPI.Controllers
             IList<User> users = await _userService.GetUsers();
             if (users == null)
             {
-                return StatusCode(500);
+                return NotFound(404);
             }
             IList<UserViewModel> userViewModel = users.Select(x => new UserViewModel(x)).ToList();
 
@@ -61,10 +62,25 @@ namespace UserWebAPI.Controllers
         ///Other Page Source = 11,
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateUserViewModel createUserViewModel)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserViewModel createUserViewModel)
         {
 
-            if (createUserViewModel.MainContactType == 0)
+            HashSet<ContactType> validateEnum = new(Enum.GetValues(typeof(ContactType)).Cast<ContactType>());
+
+            if (createUserViewModel.PreferedContactTypes.Count > validateEnum.Count || createUserViewModel.AlternativeContactType.Count > validateEnum.Count)
+            {
+                return BadRequest($"You can't register more than 11 contact types in field");
+            }
+
+            IEnumerable<bool> validateAlternativeContactType = createUserViewModel.AlternativeContactType.Select(x => !validateEnum.Contains(x));
+            IEnumerable<bool> validatePreferredContactType = createUserViewModel.PreferedContactTypes.Select(x => !validateEnum.Contains(x));
+
+            if (validateAlternativeContactType.Contains(true) || validatePreferredContactType.Contains(true))
+            {
+                return BadRequest("You tried to insert a invalid contact type");
+            }
+
+            if (!validateEnum.Contains(createUserViewModel.MainContactType))
             {
                 return BadRequest("Main contact Type can't be null");
             }
@@ -91,7 +107,53 @@ namespace UserWebAPI.Controllers
                 return BadRequest();
             }
         }
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUser([FromBody] CreateUserViewModel createUserViewModel, string userId)
+        {
+            HashSet<ContactType> validateEnum = new(Enum.GetValues(typeof(ContactType)).Cast<ContactType>());
 
+            if (createUserViewModel.PreferedContactTypes.Count > validateEnum.Count || createUserViewModel.AlternativeContactType.Count > validateEnum.Count)
+            {
+                return BadRequest($"You can't register more than 11 contact types in field");
+            }
+
+            IEnumerable<bool> validateAlternativeContactType = createUserViewModel.AlternativeContactType.Select(x => !validateEnum.Contains(x));
+            IEnumerable<bool> validatePreferredContactType = createUserViewModel.PreferedContactTypes.Select(x => !validateEnum.Contains(x));
+
+            if (validateAlternativeContactType.Contains(true) || validatePreferredContactType.Contains(true))
+            {
+                return BadRequest("You tried to insert a invalid contact type");
+            }
+
+            if (!validateEnum.Contains(createUserViewModel.MainContactType))
+            {
+                return BadRequest("Main contact Type can't be null");
+            }
+            if (string.IsNullOrEmpty(createUserViewModel.Name))
+            {
+                return BadRequest("User name can't be null");
+
+            }
+            try
+            {
+                User user = new();
+                user.Name = createUserViewModel.Name;
+                user.MainContactType = createUserViewModel.MainContactType;
+                user.PreferedContactTypes = createUserViewModel.PreferedContactTypes;
+                user.AlternativeContactTypes = createUserViewModel.AlternativeContactType;
+                user.Nickname = createUserViewModel.Nickame;
+                user.Disable = createUserViewModel.Disabled;
+
+                await _userService.EditUser(userId, user);
+
+                return Ok("Success");
+
+            }
+            catch (System.Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
         [HttpGet]
         public async Task<IActionResult> GetAllDisabledUsers()
         {
@@ -118,7 +180,7 @@ namespace UserWebAPI.Controllers
         ///Youtubr Channel = 10,
         ///Other Page Source = 11,
         /// </summary>
-        [HttpGet ("{contactType}")]
+        [HttpGet("{contactType}")]
         public async Task<IActionResult> GetEnabledUsersByContactType(ContactType contactType)
         {
             IList<User> users = await _userService.GetEnabledUsersByContactType(contactType);
@@ -144,7 +206,7 @@ namespace UserWebAPI.Controllers
             return Ok(userViewModelList);
         }
 
-        [HttpGet ("{userId}")]
+        [HttpGet("{userId}")]
         public async Task<IActionResult> GetContactTypesByUser(string userId)
         {
             User user = await _userService.GetUserById(userId);

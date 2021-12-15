@@ -66,7 +66,7 @@ namespace UserWebAPI.Controllers
 
             return Ok(communicationViewModel);
         }
-        [HttpGet]
+        [HttpGet("{title}")]
         public async Task<IActionResult> GetCommunicationsWithTitle( string title)
         {
             IList<Communication> communication = await _communicationService.GetCommunicationWithTitle(title);
