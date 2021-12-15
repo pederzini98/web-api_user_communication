@@ -13,6 +13,7 @@ namespace UseModels.Services
     public class UserService : IUserService
     {
         private readonly IMongoCollection<User> _users;
+
         public UserService(IDbClient dbClient)
         {
             _users = dbClient.GetUserCollection();
@@ -42,12 +43,12 @@ namespace UseModels.Services
 
         public async Task<List<User>> GetDisabledUsers()
         {
-            return await _users.FindAsync(user => user.Disable == true).GetAwaiter().GetResult().ToListAsync();
+            return await _users.FindAsync(user => user.Disable == true && !String.IsNullOrEmpty(user.Name)).GetAwaiter().GetResult().ToListAsync();
         }
 
         public async Task<List<User>> GetEnabledUsers()
         {
-            List<User> users = await _users.FindAsync(user => user.Disable == false).GetAwaiter().GetResult().ToListAsync();
+            List<User> users = await _users.FindAsync(user => user.Disable == false && !String.IsNullOrEmpty(user.Name)).GetAwaiter().GetResult().ToListAsync();
             return users;
         }
 
@@ -59,14 +60,14 @@ namespace UseModels.Services
 
         public async Task<User> GetUserById(string id)
         {
-            IAsyncCursor<User> cursor = await _users.FindAsync(user => user.Id == id);
-            User user = cursor.FirstOrDefault();
+            IAsyncCursor<User> cursor = await _users.FindAsync(user => user.Id == id && !String.IsNullOrEmpty(user.Name));
+            User user = await cursor.FirstAsync();
             return user;
         }
 
         public async Task<List<User>> GetUsers()
         {
-            return await _users.Find(user => true).ToListAsync();
+            return await _users.Find(user =>  !String.IsNullOrEmpty(user.Name)).ToListAsync();
         }
 
         public async Task<bool> CreateUser(User user)
@@ -74,21 +75,6 @@ namespace UseModels.Services
             try
             {
                 await _users.InsertOneAsync(user);
-                return true;
-
-            }
-            catch (Exception)
-            {
-
-                return false;
-            }
-        }
-
-        public async Task<bool> DeleteUser(string id)
-        {
-            try
-            {
-                await _users.DeleteOneAsync(user => user.Id == id);
                 return true;
 
             }

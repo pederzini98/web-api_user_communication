@@ -35,19 +35,9 @@ namespace UseModels.Services
 
         }
 
-        public async Task<bool> DelteComunication(string id)
+        public async Task<List<Communication>> GetBiggerCommunicationTitles()
         {
-            try
-            {
-                await _communication.DeleteOneAsync(communication => communication.UserId == id);
-                return true;
-
-            }
-            catch (Exception)
-            {
-
-                return false;
-            }
+            return await _communication.FindAsync(communication => !String.IsNullOrEmpty(communication.CommunicationTitle)).GetAwaiter().GetResult().ToListAsync();
         }
 
         public async Task<Communication> GetCommunicationById(string id)
@@ -59,17 +49,17 @@ namespace UseModels.Services
 
         public async Task<List<Communication>> GetCommunicationByUser(string userId)
         {
-            return await _communication.FindAsync(x => x.UserId == userId).GetAwaiter().GetResult().ToListAsync();
+            return await _communication.FindAsync(communication => communication.UserId == userId).GetAwaiter().GetResult().ToListAsync();
         }
 
         public async Task<List<Communication>> GetCommunicationByUserAndContactType(string userId, ContactType contacType)
         {
-            return await _communication.FindAsync(x => x.UserId == userId && x.UsedContactType == contacType).GetAwaiter().GetResult().ToListAsync();
+            return await _communication.FindAsync(communication => communication.UserId == userId && communication.UsedContactType == contacType).GetAwaiter().GetResult().ToListAsync();
         }
 
-        public async Task<List<Communication>> GetCommunicationWithTitle()
+        public async Task<List<Communication>> GetCommunicationWithTitle(string title)
         {
-            return await _communication.FindAsync(x => !string.IsNullOrEmpty(x.CommunicationTitle)).GetAwaiter().GetResult().ToListAsync();
+            return await _communication.FindAsync(communication => communication.CommunicationTitle == title).GetAwaiter().GetResult().ToListAsync();
         }
 
 

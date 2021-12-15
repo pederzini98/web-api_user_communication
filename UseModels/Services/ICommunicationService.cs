@@ -16,11 +16,12 @@ namespace UseModels.Services
 
         Task<List<Communication>> GetCommunicationByUserAndContactType(string userId, ContactType contacType);
 
-        Task<List<Communication>> GetCommunicationWithTitle();
+        Task<List<Communication>> GetCommunicationWithTitle(string title);
+        Task<List<Communication>> GetBiggerCommunicationTitles();
+        
 
         Task<bool> CreateCommunication(Communication communication);
 
-        Task<bool> DelteComunication(string id);
 
     }
 }

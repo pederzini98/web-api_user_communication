@@ -11,7 +11,7 @@ using UseModels.ViewModels;
 namespace UserWebAPI.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -92,21 +92,7 @@ namespace UserWebAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            try
-            {
-                await _userService.DeleteUser(id);
-                return Ok();
-            }
-            catch (System.Exception)
-            {
-                return NotFound();
-            }
-        }
-
-        [HttpGet("usersDisabled")]
+        [HttpGet]
         public async Task<IActionResult> GetAllDisabledUsers()
         {
             IList<User> users = await _userService.GetDisabledUsers();
@@ -119,7 +105,20 @@ namespace UserWebAPI.Controllers
             return Ok(userViewModelList);
         }
 
-        [HttpGet("enableUsersByContactType")]
+        /// <summary>
+        /// Email = 1,
+        ///Residencial Phone = 2,
+        ///Call Cellphone = 3,
+        /// Whatsapp = 4,
+        /// Telegram = 5,
+        ///Other CellPhone Number = 6,
+        ///Facebook Page = 7,
+        /// Linkedin Page = 8,
+        ///Instagram Page = 9,
+        ///Youtubr Channel = 10,
+        ///Other Page Source = 11,
+        /// </summary>
+        [HttpGet ("{contactType}")]
         public async Task<IActionResult> GetEnabledUsersByContactType(ContactType contactType)
         {
             IList<User> users = await _userService.GetEnabledUsersByContactType(contactType);
@@ -132,7 +131,7 @@ namespace UserWebAPI.Controllers
             return Ok(userViewModelList);
         }
 
-        [HttpGet("usersEnabled")]
+        [HttpGet]
         public async Task<IActionResult> GetAllEnabledUsers()
         {
             IList<User> users = await _userService.GetEnabledUsers();
@@ -145,7 +144,7 @@ namespace UserWebAPI.Controllers
             return Ok(userViewModelList);
         }
 
-        [HttpGet("usersContactTypes")]
+        [HttpGet ("{userId}")]
         public async Task<IActionResult> GetContactTypesByUser(string userId)
         {
             User user = await _userService.GetUserById(userId);
@@ -158,8 +157,8 @@ namespace UserWebAPI.Controllers
             return Ok(userContactTypesViewModel);
         }
 
-        [HttpPut("disableUser {id}")]
-        public async Task<IActionResult> DisabledUser(string id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> DisabledUserById(string id)
         {
             try
             {
@@ -178,8 +177,8 @@ namespace UserWebAPI.Controllers
             }
         }
 
-        [HttpPut("enableUser {id}")]
-        public async Task<IActionResult> EnabledUser(string id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EnabledUserById(string id)
         {
             try
             {

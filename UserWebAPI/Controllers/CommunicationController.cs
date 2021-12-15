@@ -12,7 +12,7 @@ using UseModels.ViewModels;
 namespace UserWebAPI.Controllers
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CommunicationController : Controller
     {
@@ -25,7 +25,7 @@ namespace UserWebAPI.Controllers
             _userService = userService;
         }
 
-        [HttpGet("GetCommunicationsByUserId {userId}")]
+        [HttpGet("{userId}")]
         public async Task<IActionResult> GetCommunicationsByUserId(string userId)
         {
             IList<Communication> communication = await _communicationService.GetCommunicationByUser(userId);
@@ -45,8 +45,20 @@ namespace UserWebAPI.Controllers
             CommunicationViewModel communicationViewModel = new(communication);
             return Ok(communicationViewModel);
         }
-
-        [HttpGet("GetCommunicationsByUserIdAndContactType/{userId}/{contactType}")]
+        /// <summary>
+        /// Email = 1,
+        ///Residencial Phone = 2,
+        ///Call Cellphone = 3,
+        /// Whatsapp = 4,
+        /// Telegram = 5,
+        ///Other CellPhone Number = 6,
+        ///Facebook Page = 7,
+        /// Linkedin Page = 8,
+        ///Instagram Page = 9,
+        ///Youtubr Channel = 10,
+        ///Other Page Source = 11,
+        /// </summary>
+        [HttpGet("{userId}/{contactType}")]
         public async Task<IActionResult> GetCommunicationsByUserIdAndContactType(string userId, ContactType contactType)
         {
             IList<Communication> communication = await _communicationService.GetCommunicationByUserAndContactType(userId, contactType);
@@ -54,20 +66,20 @@ namespace UserWebAPI.Controllers
 
             return Ok(communicationViewModel);
         }
-        [HttpGet("GetCommunicationsWithTitle")]
-        public async Task<IActionResult> GetCommunicationsWithTitle()
+        [HttpGet]
+        public async Task<IActionResult> GetCommunicationsWithTitle( string title)
         {
-            IList<Communication> communication = await _communicationService.GetCommunicationWithTitle();
+            IList<Communication> communication = await _communicationService.GetCommunicationWithTitle(title);
             IList<CommunicationViewModel> communicationViewModel = communication.Select(x => new CommunicationViewModel(x)).ToList();
 
             return Ok(communicationViewModel);
         }
-        [HttpGet("GetCommunicationsWithTitleBiggerThanFive")]
+        [HttpGet()]
         public async Task<IActionResult> GetCommunicationsWithTitleBiggerThanFive()
         {
 
             Communication communication = new();
-            List<Communication> communications = await _communicationService.GetCommunicationWithTitle();
+            List<Communication> communications = await _communicationService.GetBiggerCommunicationTitles();
             communications = communication.VerifyTitleLongerThanFiveChars(communications);
             IList<CommunicationViewModel> communicationViewModel = communications.Select(x => new CommunicationViewModel(x)).ToList();
 
@@ -96,7 +108,12 @@ namespace UserWebAPI.Controllers
                 {
                     return NotFound("User no found");
                 }
-                if (createCommunicationViewModel.UsedContactType != findUser.MainContactType &&
+                else if (String.IsNullOrEmpty(createCommunicationViewModel.CommunicationTitle) || createCommunicationViewModel.CommunicationTitle.Length < 5)
+                {
+                    return BadRequest("Communication Title needs to contain at least 5 characters");
+
+                }
+                else if (createCommunicationViewModel.UsedContactType != findUser.MainContactType &&
                     !findUser.PreferedContactTypes.Contains(createCommunicationViewModel.UsedContactType) &&
                     !findUser.AlternativeContactTypes.Contains(createCommunicationViewModel.UsedContactType))
                 {
@@ -119,12 +136,6 @@ namespace UserWebAPI.Controllers
                 return BadRequest("User not Found");
             }
 
-        }
-
-        [HttpDelete]
-        public async Task<IActionResult> DeleteCommunication(string id)
-        {
-            return Ok(await _communicationService.DelteComunication(id));
         }
     }
 }

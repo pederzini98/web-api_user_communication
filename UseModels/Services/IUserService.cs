@@ -14,8 +14,6 @@ namespace UseModels.Services
 
         Task<User> DisableUser(string id);
 
-        Task<bool> DeleteUser(string id);
-
         Task<User> EnabledUser(string id);
 
         Task<List<User>> GetDisabledUsers();
